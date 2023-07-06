@@ -11,11 +11,11 @@
 
 ;;(chunk-type reach-target player target)
 
-(chunk-type goal phase player target-x target-y border-left border-right border-top border-bottom)
+(chunk-type goal phase player target-x target-y border-left border-right border-top border-bottom goal-x goal-y)
 
 (chunk-type who-am-i step player)
-(chunk-type reach-target step player target-x target-y)
-(chunk-type get-borders step center-x center-y)
+(chunk-type reach-target step player target-x target-y can-untrack)
+;; (chunk-type get-borders step center-x center-y)
 
 
 (add-dm
@@ -183,58 +183,110 @@
 
 ;; LOCK ONTO PLAYER
 
-(p enter-reach-target
+(p change-target-from-bottom-left-to-bottom-right
     =goal>
-        isa         goal
-        phase       idle
-        player      =player
-        target-x    =target-x
-        target-y    =target-y
+        isa             goal
+        phase           reach-target
+        player          =player
+        border-top      =top
+        border-bottom   =bottom
+        border-left     =left
+        border-right    =right        
+        target-x        =right
+        target-y        =bottom
+        goal-x          nil
+        goal-y          nil
+    =visual-location>
+        color           =player
+        kind            oval
+        screen-x        =x
+        screen-y        =y
+
+    !eval! (> (+ =x 25) =right)
+    !eval! (> (+ =y 25) =bottom)
+    !bind! =center (/ (+ =top =bottom) 2)
 ==>
     =goal>
-        phase       reach-target
+        target-x        =left
+        target-y        =center
+)
+
+(p enter-reach-target
+    =goal>
+        isa             goal
+        phase           idle
+        player          =player
+        target-x        =target-x
+        target-y        =target-y
+==>
+    =goal>
+        phase           reach-target
     +imaginal>
-        isa         reach-target
-        player      =player
-        target-x    =target-x
-        target-y    =target-y
+        isa             reach-target
+        step            find
+        can-untrack     nil
+)
+
+(p detect-goal
+    =goal>
+        isa             goal
+        goal-x          nil
+        goal-y          nil
+    =imaginal>
+        isa             reach-target
+        can-untrack     t
+==>
+    +visual-location>
+        color           green
+    =imaginal>
+        can-untrack     nil
+)
+
+(p save-goal-pos-and-change-target
+    =goal>
+        isa             goal
+        goal-x          nil
+        goal-y          nil
+    =visual-location>
+        color           green
+        screen-x        =x
+        screen-y        =y
+==>
+    =goal>
+        goal-x          =x
+        goal-y          =y
+        target-x        =x
+        target-y        =y
 )
 
 (p find-player
     =goal>
-        phase       reach-target
+        phase           reach-target
+        player          =player
     =imaginal>
-        isa         reach-target
-        player      =player
-        step        nil
-    ?visual-location>
-        buffer      empty
-    ?visual>
-        buffer      empty
+        isa             reach-target
+        step            find
 ==>
     =imaginal>
-        step        attend
+        step            attend
     +visual-location>
-        color       =player
-        kind        oval
+        color           =player
+        kind            oval
 )
 
 (p attend-player
     =goal>
         phase       reach-target
+        player      =player
     =imaginal>
         isa         reach-target
-        player      =player
         step        attend
     =visual-location>
         color       =player 
-        kind        oval
-    ?visual>
-        buffer      empty       
+        kind        oval     
 ==>
     =imaginal>
         step        track
-    =visual-location>
     +visual>
         screen-pos  =visual-location  
         cmd         move-attention
@@ -243,9 +295,9 @@
 (p track-player
     =goal>
         phase       reach-target
+        player      =player
     =imaginal>
         isa         reach-target
-        player      =player
         step        track
     =visual>
         color       =player   
@@ -259,58 +311,58 @@
 
 (p move-right
     =goal>
-        phase       reach-target
+        phase           reach-target
+        target-x        =target-x
+        player          =player
     =imaginal>
-        isa         reach-target
-        step        move
-        target-x    =target-x
-        player      =player
+        isa             reach-target
+        step            move
     =visual-location>
-        color       =player
-        screen-x    =x
-        screen-y    =y
+        color           =player
+        screen-x        =x
     ?manual>
-        state       free
+        state           free
 
     !eval!      (< =x =target-x)
 ==>
     =imaginal>
+        can-untrack     t
     +manual>
-        cmd         press-key
-        key         d
+        cmd             press-key
+        key             d
 )
 
 (p move-down
     =goal>
-        phase       reach-target
+        phase           reach-target
+        target-y        =target-y
+        player          =player
     =imaginal>
-        isa         reach-target
-        step        move
-        target-y    =target-y
-        player      =player
+        isa             reach-target
+        step            move
     =visual-location>
-        color       =player
-        screen-x    =x
-        screen-y    =y
+        color           =player
+        screen-y        =y
     ?manual>
-        state       free
+        state           free
 
     !eval!      (< =y =target-y)
 ==>
     =imaginal>
+        can-untrack     t
     +manual>
-        cmd         press-key
-        key         s
+        cmd             press-key
+        key             s
 )
 
 (p move-left
     =goal>
         phase       reach-target
+        target-x    =target-x
+        player      =player
     =imaginal>
         isa         reach-target
         step        move
-        target-x    =target-x
-        player      =player
     =visual-location>
         color       =player
         screen-x    =x
@@ -320,6 +372,7 @@
     !eval!      (> =x =target-x)
 ==>
     =imaginal>
+        can-untrack     t
     +manual>
         cmd         press-key
         key         a
@@ -328,11 +381,11 @@
 (p move-up
     =goal>
         phase       reach-target
+        target-y    =target-y
+        player      =player
     =imaginal>
         isa         reach-target
         step        move
-        target-y    =target-y
-        player      =player
     =visual-location>
         color       =player
         screen-y    =y
@@ -342,9 +395,9 @@
     !eval!      (> =y =target-y)
 ==>
     =imaginal>
+        can-untrack     t
     +manual>
         cmd         press-key
         key         w
 )
-
 )

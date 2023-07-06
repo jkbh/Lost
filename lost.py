@@ -62,7 +62,7 @@ xCxxxxxxxxxRxxCxxOOOxxxTxxxxx
 '''}
 
 level_simple = {'parameters': ['random category colors'], 'layout': '''
-xxxxSxxxx
+xxSxxxxxx
 xxxxxxxxx
 xxxxxxxxx
 xxxxxxxxx
@@ -101,10 +101,10 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxTxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-xxxxxxxxxxxTxxxxxxxxxxxxxxxxxxxxxxxx
 '''}
 
 
