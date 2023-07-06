@@ -11,11 +11,11 @@
 
 ;;(chunk-type reach-target player target)
 
-(chunk-type goal phase player target-x target-y)
+(chunk-type goal phase player target-x target-y border-left border-right border-top border-bottom)
 
 (chunk-type who-am-i step player)
 (chunk-type reach-target step player target-x target-y)
-(chunk-type get-center step center-x center-y)
+(chunk-type get-borders step center-x center-y)
 
 
 (add-dm
@@ -79,6 +79,9 @@
     =imaginal>
         player          =color
         step            check
+    +manual>
+        cmd             press-key
+        key             w
 )
 
 (p finish-whoami
@@ -110,78 +113,72 @@
     =imaginal>
         player          nil
         step            start
+
 )
 ;; ############## FINDING CENTER ##################
-(p enter-get-center
+(p enter-get-borders-and-request-left
     =goal>
         isa             goal
         phase           idle
         player          =player
-        target-x        nil
-        target-y        nil
+        border-left     nil
+        border-right    nil
+        border-top      nil
+        border-bottom   nil
 ==>
     =goal>
-        phase           get-center
-    +imaginal>
-        isa             get-center
-        step            left
-)
-
-(p request-border-left
-    =goal>
-        phase           get-center
-    =imaginal>
-        isa             get-center
-        step            left
-        center-x        nil
-        center-y        nil
-==>
+        phase           get-borders
     +visual-location>
         color           yellow
         kind            line
         screen-x        lowest
         :attended       nil
-    =imaginal>
-        step            top
 )
 
-(p save-center-y-and-request-border-top
+(p save-border-left
     =goal>
-        phase           get-center
-    =imaginal>
-        isa             get-center
-        step            top
-        center-x        nil
-        center-y        nil
+        phase           get-borders
+        border-left     nil
     =visual-location>
         color           yellow
-        screen-y        =y
+        kind            line
+        screen-x        =left
 ==>
+    =goal>
+        border-left     =left
+    +visual>
+        screen-pos      =visual-location
+        cmd             move-attention
     +visual-location>
         color           yellow
         kind            line
-        screen-y        lowest
+        screen-x        highest
         :attended       nil
-    =imaginal>  
-        center-y        =y
-        step            finish
 )
 
-(p save-center-x
+(p save-border-top-right-bottom-and-leave-phase
     =goal>
-        phase           get-center
-    =imaginal>
-        isa             get-center
-        step            finish
-        center-y        =y
+        phase           get-borders
+      - border-left     nil  
+        border-top      nil        
+        border-bottom   nil
+        border-right    nil      
     =visual-location>
         color           yellow
+        kind            line
         screen-x        =x
+    =visual>
+        color           yellow
+        end1-y          =y1
+        end2-y          =y2
 ==>
-    =goal>
-        phase           idle
+    =goal>  
+        border-top      =y2
+        border-bottom   =y1
+        border-right    =x
         target-x        =x
-        target-y        =y
+        target-y        =y1
+        phase           idle
 )
 
 ;; LOCK ONTO PLAYER
@@ -219,6 +216,7 @@
         step        attend
     +visual-location>
         color       =player
+        kind        oval
 )
 
 (p attend-player
@@ -230,11 +228,13 @@
         step        attend
     =visual-location>
         color       =player 
+        kind        oval
     ?visual>
         buffer      empty       
 ==>
     =imaginal>
         step        track
+    =visual-location>
     +visual>
         screen-pos  =visual-location  
         cmd         move-attention
@@ -248,7 +248,8 @@
         player      =player
         step        track
     =visual>
-        color       =player      
+        color       =player   
+        oval        t  
 ==>
     +visual>
         cmd         start-tracking
@@ -301,4 +302,49 @@
         cmd         press-key
         key         s
 )
+
+(p move-left
+    =goal>
+        phase       reach-target
+    =imaginal>
+        isa         reach-target
+        step        move
+        target-x    =target-x
+        player      =player
+    =visual-location>
+        color       =player
+        screen-x    =x
+    ?manual>
+        state       free
+
+    !eval!      (> =x =target-x)
+==>
+    =imaginal>
+    +manual>
+        cmd         press-key
+        key         a
+)
+
+(p move-up
+    =goal>
+        phase       reach-target
+    =imaginal>
+        isa         reach-target
+        step        move
+        target-y    =target-y
+        player      =player
+    =visual-location>
+        color       =player
+        screen-y    =y
+    ?manual>
+        state       free
+
+    !eval!      (> =y =target-y)
+==>
+    =imaginal>
+    +manual>
+        cmd         press-key
+        key         w
+)
+
 )

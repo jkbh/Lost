@@ -61,13 +61,59 @@ xRxxxRxxxxxxxxxxRxxxxxOOxOOxx
 xCxxxxxxxxxRxxCxxOOOxxxTxxxxx
 '''}
 
+level_simple = {'parameters': ['random category colors'], 'layout': '''
+xxxxSxxxx
+xxxxxxxxx
+xxxxxxxxx
+xxxxxxxxx
+xxxxxxxxx
+xxxxxxxxx
+xxxxxTxxx
+'''}
+
+
+level_simple_obstacle = {'parameters': ['random category colors'], 'layout': '''
+xxxxSxxxx
+xxxxxxxxx
+xxxxxxxxx
+xxxxOOxxx
+xxxxxxxxx
+xxxxxxxxx
+xxxxxTxxx
+'''}
+
+level_bottleneck = {'parameters': ['random category colors'], 'layout': '''
+xxxxSxxxx
+xxxxxxxxx
+xxxxxxxxx
+OOOxOOOOO
+xxxxxxxxx
+xxxxxxxxx
+xxxxxTxxx
+'''}
+
+level_large = {'parameters': ['random category colors'], 'layout': '''
+xOxxSxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxTxxxxxxxxxxxxxxxxxxxxxxxx
+'''}
+
 
 # change this to point to the location of your cognitive model lisp file, e.g. C:\actr\lost_game\model.lisp
 modelPath = None
 printLog = True
 
 # change this to a previously defined level
-levelToPlay = level4
+levelToPlay = level_large
 
 
 
@@ -141,9 +187,9 @@ class ExperimentSession:
 
     def getVisibleTiles(self):
         top = max(0, self.agent.position.y - self.viewRange)
-        bottom = min(self.levelHeight, self.agent.position.y + self.viewRange)
+        bottom = min(self.levelHeight, self.agent.position.y + self.viewRange + 1)
         left = max(0, self.agent.position.x - self.viewRange)
-        right = min(self.levelWidth, self.agent.position.x + self.viewRange)
+        right = min(self.levelWidth, self.agent.position.x + self.viewRange + 1)
         tiles = []
         for y in range(top, bottom):
             for x in range(left, right):
