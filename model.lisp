@@ -2,7 +2,7 @@
 
 (define-model lost-agent
 
-(sgp :egs 0.2)  ; Dieses Modell verwendet Utility. Der utility noise kann ausgeschaltet werden, indem dieser Parameter auf 0 gesetzt wird.
+(sgp :egs 5 :ul t)  ; Dieses Modell verwendet Utility. Der utility noise kann ausgeschaltet werden, indem dieser Parameter auf 0 gesetzt wird.
 (sgp :esc t)    ; Dieses Modell verwendet subsymbolische Verarbeitung
 (sgp :v t :show-focus t :trace-detail high)
 
@@ -14,7 +14,7 @@
 (chunk-type goal phase player target-x target-y border-left border-right border-top border-bottom goal-x goal-y)
 
 (chunk-type who-am-i step player)
-(chunk-type reach-target step player target-x target-y can-untrack)
+(chunk-type reach-target step player target-x target-y can-untrack last-x last-y)
 ;; (chunk-type get-borders step center-x center-y)
 
 
@@ -312,21 +312,23 @@
 (p move-right
     =goal>
         phase           reach-target
-        target-x        =target-x
         player          =player
+        border-right    =x-max
     =imaginal>
-        isa             reach-target
         step            move
     =visual-location>
         color           =player
         screen-x        =x
+        screen-y        =y
     ?manual>
         state           free
-
-    !eval!      (< =x =target-x)
+    !eval! (< =x (- =x-max 25))
 ==>
     =imaginal>
+        step            after-move
         can-untrack     t
+        last-x          =x
+        last-y          =y
     +manual>
         cmd             press-key
         key             d
@@ -335,20 +337,22 @@
 (p move-down
     =goal>
         phase           reach-target
-        target-y        =target-y
         player          =player
+        border-bottom   =y-max
     =imaginal>
-        isa             reach-target
         step            move
     =visual-location>
         color           =player
+        screen-x        =x
         screen-y        =y
     ?manual>
         state           free
-
-    !eval!      (< =y =target-y)
+    !eval! (< =y (- =y-max 25))
 ==>
     =imaginal>
+        step            after-move
+        last-x          =x
+        last-y          =y
         can-untrack     t
     +manual>
         cmd             press-key
@@ -357,47 +361,134 @@
 
 (p move-left
     =goal>
-        phase       reach-target
-        target-x    =target-x
-        player      =player
+        phase           reach-target
+        player          =player
+        border-left     =x-min
     =imaginal>
-        isa         reach-target
-        step        move
+        step            move
     =visual-location>
-        color       =player
-        screen-x    =x
+        color           =player
+        screen-x        =x
+        screen-y        =y
     ?manual>
-        state       free
-
-    !eval!      (> =x =target-x)
+        state           free
+    !eval! (> =x (+ =x-min 25))
 ==>
     =imaginal>
+        step            after-move
+        last-x          =x
+        last-y          =y
         can-untrack     t
     +manual>
-        cmd         press-key
-        key         a
+        cmd             press-key
+        key             a
 )
 
 (p move-up
     =goal>
-        phase       reach-target
-        target-y    =target-y
-        player      =player
+        phase           reach-target
+        player          =player
+        border-top      =y-min
     =imaginal>
-        isa         reach-target
-        step        move
+        step            move
     =visual-location>
-        color       =player
-        screen-y    =y
+        color           =player
+        kind            oval
+        screen-x        =x
+        screen-y        =y
     ?manual>
-        state       free
+        state           free
 
-    !eval!      (> =y =target-y)
+    !eval! (> =y (+ =y-min 25))
 ==>
     =imaginal>
+        step            after-move
+        last-x          =x
+        last-y          =y
         can-untrack     t
     +manual>
-        cmd         press-key
-        key         w
+        cmd             press-key
+        key             w
 )
+
+(p closer-to-target
+    =goal>
+        phase           reach-target
+        player          =player
+        target-x        =target-x
+        target-y        =target-y
+    =imaginal>
+        step            after-move
+        last-x          =x-old
+        last-y          =y-old
+    =visual-location>
+        kind            oval
+        color           =player
+        screen-x        =x
+        screen-y        =y
+    ?manual>
+        state           free
+    
+    !bind! =distance-old (sqrt (+ (expt (- =x-old =target-x) 2) (expt (- =y-old =target-y) 2)))
+    !bind! =distance (sqrt (+ (expt (- =x =target-x) 2) (expt (- =y =target-y) 2)))
+    !eval! (< =distance =distance-old)
+==>
+    !eval! (trigger-reward (- =distance-old =distance))
+    =imaginal>
+        step            move
+)
+
+;; (spp closer-to-target :reward 1)
+
+(p further-from-target
+    =goal>
+        phase           reach-target
+        player          =player
+        target-x        =target-x
+        target-y        =target-y
+    =imaginal>
+        step            after-move
+        last-x          =x-old
+        last-y          =y-old
+    =visual-location>
+        kind            oval
+        color           =player
+        screen-x        =x
+        screen-y        =y
+    ?manual>
+        state           free
+    
+    !bind! =distance-old (sqrt (+ (expt (- =x-old =target-x) 2) (expt (- =y-old =target-y) 2)))
+    !bind! =distance (sqrt (+ (expt (- =x =target-x) 2) (expt (- =y =target-y) 2)))
+    !eval! (> =distance =distance-old)
+==>
+    !eval! (trigger-reward (- =distance-old =distance))
+    =imaginal>
+        step            move
+)
+
+;; (spp further-from-target :reward -0.1)
+
+(p position-did-not-change
+    =goal>
+        phase           reach-target
+        player          =player
+    =imaginal>
+        step            after-move
+        last-x          =x
+        last-y          =y
+    =visual-location> 
+        color           =player
+        kind            oval
+        screen-x        =x
+        screen-y        =y
+    ?manual>
+        state           free
+==>
+    =imaginal>
+        step            move
+)
+
+(spp position-did-not-change :reward -20)
+
 )

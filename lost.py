@@ -99,12 +99,12 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxTxxxxxxx
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxOxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxOxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxOxxTxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxOxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxOxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxOxxxxxxxxxx
 '''}
 
 
@@ -113,7 +113,7 @@ modelPath = None
 printLog = True
 
 # change this to a previously defined level
-levelToPlay = level_large
+levelToPlay = level_bottleneck
 
 
 
