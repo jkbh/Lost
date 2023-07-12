@@ -93,18 +93,18 @@ xxxxxTxxx
 '''}
 
 level_large = {'parameters': ['random category colors'], 'layout': '''
-xOxxSxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-xxxxxxxxxxxxxxxxxxxxxxxxxOxxxxxxxxxx
-xxxxxxxxxxxxxxxxxxxxxxxxxOxxxxxxxxxx
-xxxxxxxxxxxxxxxxxxxxxxxxxOxxTxxxxxxx
-xxxxxxxxxxxxxxxxxxxxxxxxxOxxxxxxxxxx
-xxxxxxxxxxxxxxxxxxxxxxxxxOxxxxxxxxxx
-xxxxxxxxxxxxxxxxxxxxxxxxxOxxxxxxxxxx
+xOxxSxxxxxxxxxxxxxOxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxOxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxOxxxxxxxxxxxxxxxxx
+xxxxxxOxxxxxxxxxxxOxxxxxxxxxxxxxxxxx
+xxxxxxOxxxxxxxxxxxOxxxxxxOxxxxxxxxxx
+xxxxxxOxxxxxxxxxxxOxxxxxxOxxxxxxxxxx
+xxxxxxOxxxxxxxxxxxOxxxxxxOxxxxxxxxxx
+xxxxxxOxxxxxxxxxxxOxxxxxxOxxxxxxxxxx
+xxxxxxOxxxxxxxxxxxOxxxxxxOxxxxxxxxxx
+xxxxxxOxxxxxxxxxxxOxxxxxxOxxxxxxxxxx
+xxxxxxOxxxxxxxxxxxxxxxxxxOxxxxxxxxxx
+TxxxxxOxxxxxxxxxxxxxxxxxxOxxxxxxxxxx
 '''}
 
 
@@ -113,7 +113,7 @@ modelPath = None
 printLog = True
 
 # change this to a previously defined level
-levelToPlay = level_bottleneck
+levelToPlay = level4
 
 
 
