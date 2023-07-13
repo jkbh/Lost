@@ -1,0 +1,45 @@
+level_simple = {'parameters': ['random category colors'], 'layout': '''
+xxSxxxxxx
+xxxxxxxxx
+xxxxxxxxx
+xxxxxxxxx
+xxxxxxxxx
+xxxxxxxxx
+xxxxxTxxx
+'''}
+
+
+level_simple_obstacle = {'parameters': ['random category colors'], 'layout': '''
+xxxxSxxxx
+xxxxxxxxx
+xxxxxxxxx
+xxxxOOxxx
+xxxxxxxxx
+xxxxxxxxx
+xxxxxTxxx
+'''}
+
+level_bottleneck = {'parameters': ['random category colors'], 'layout': '''
+xxxxSxxxx
+xxxxxxxxx
+xxxxxxxxx
+OOOxOOOOO
+xxxxxxxxx
+xxxxxxxxx
+xxxxxTxxx
+'''}
+
+level_large = {'parameters': ['random category colors'], 'layout': '''
+xOxxSxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxTxxxxxxxxxxxxxxxxxxxxxxxx
+'''}

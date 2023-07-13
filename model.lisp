@@ -6,7 +6,7 @@
 (sgp :esc t)    ; Dieses Modell verwendet subsymbolische Verarbeitung
 (sgp :v t :show-focus t :trace-detail high)
 
-(chunk-type goal phase player target-x target-y border-left border-right border-top border-bottom goal-x goal-y obstacle)
+(chunk-type goal phase player obstacle bonus malus target-x target-y border-left border-right border-top border-bottom goal-x goal-y)
 (chunk-type who-am-i step player)
 (chunk-type reach-target step player target-x target-y can-explore last-x last-y desired-x desired-y desired-color)
 
@@ -31,7 +31,7 @@
         step            start
 )
 
-(p request-top-row-tile-and-move-down
+(p request-top-row-tile-and-move-down 
     =goal>
         phase           who-am-i
     =imaginal>
@@ -109,7 +109,8 @@
         step            start
 
 )
-;; ############## FINDING CENTER ##################
+;; ############## FINDING BORDERS ##################
+
 (p enter-get-borders-and-request-left
     =goal>
         isa             goal
@@ -204,6 +205,18 @@
         target-x        =left
         target-y        =center
 )
+(p set-target-to-goal
+    =goal>
+        target-x        nil
+        target-y        nil
+        goal-x          =x
+        goal-y          =y
+==>
+    =goal>
+        target-x        =x
+        target-y        =y
+)
+
 
 (p enter-reach-target
     =goal>
@@ -218,12 +231,10 @@
     +imaginal>
         isa             reach-target
         step            find
-        move-count      0
 )
 
-(p detect-goal
+(p request-goal
     =goal>
-        isa             goal
         goal-x          nil
         goal-y          nil
     =imaginal>
@@ -249,9 +260,53 @@
     =goal>
         goal-x          =x
         goal-y          =y
-        target-x        =x
-        target-y        =y
+        target-x        nil
+        target-y        nil
 )
+
+;; (p request-unknown-tile-color
+;;     =goal>
+;;         isa             goal
+;;         player          =player
+;;         obstacle        =obstacle
+;;         bonus           nil
+;;     =imaginal>
+;;         isa             reach-target
+;;         can-explore     t
+;; ==>
+;;     +visual-location>
+;;         kind            oval
+;;       - color           =player
+;;       - color           =obstacle
+;;       - color           green
+;;     =imaginal>
+;;         can-explore     nil
+;; )
+
+;; (p target-unknown-tile
+;;     =goal>
+;;         isa             goal
+;;         player          =player
+;;         obstacle        =obstacle
+;;         bonus           nil
+;;     =imaginal>
+;;         isa             reach-target
+;;         can-explore     t
+;;     =visual-location>
+;;         kind            oval
+;;       - color           =player
+;;       - color           =obstacle
+;;       - color           green
+;;         color           =color
+;;         screen-x        =x
+;;         screen-y        =y
+;; ==>    
+;;     =goal>
+;;         target-x        =x
+;;         target-y        =y
+;;     =imaginal>
+;;         can-explore     nil
+;; )
 
 (p find-player
     =goal>
@@ -320,7 +375,7 @@
     !bind! =xnew (+ =x 25)
 ==>
     =imaginal>
-        step            before-press
+        step            press-key
         key             d
         desired-x       =xnew
         desired-y       =y
@@ -341,7 +396,7 @@
     !bind! =ynew (+ =y 25)
 ==>
     =imaginal>
-        step            before-press
+        step            press-key
         key             s
         desired-x       =x
         desired-y       =ynew
@@ -362,7 +417,7 @@
     !bind! =xnew (- =x 25)
 ==>
     =imaginal>
-        step            before-press
+        step            press-key
         key             a
         desired-x       =xnew
         desired-y       =y
@@ -384,69 +439,10 @@
     !bind! =ynew (- =y 25)
 ==>
     =imaginal>
-        step            before-press
+        step            press-key
         key             w
         desired-x       =x
         desired-y       =ynew
-)
-
-;; CHECK DESIRED POSITION
-
-(p request-desired-loc
-    =goal>
-        phase           reach-target
-        player          =player
-    =imaginal>
-        step            before-press
-        desired-x      =desired-x
-        desired-y      =desired-y
-    =visual-location>
-        color           =player
-        kind            oval
-        screen-x        =x
-        screen-y        =y
-==>
-    +visual-location>
-        kind            oval
-        screen-x        =desired-x
-        screen-y        =desired-y
-    =imaginal>
-        step            before-press
-        last-x          =x
-        last-y          =y
-)
-
-(p save-desired-color
-    =goal>
-        player          =player
-    =imaginal>
-        step            before-press
-    =visual-location>
-      - color           =player
-        color           =color
- ==>
-    =imaginal>
-        step            press-key 
-        desired-color   =color
-    +visual-location>
-        player          =player
-        kind            oval
-)
-
-(p request-player
-    =goal>
-        phase           reach-target
-        player          =player
-    =imaginal>
-        step            before-press
-    ?visual-location>
-        buffer          failure
-==>
-    =imaginal>
-        step            press-key
-    +visual-location>
-        kind            oval
-        color           =player
 )
 
 ;; PRESS KEY
@@ -460,9 +456,13 @@
         key             =key
     =visual-location>
         color           =player
+        screen-x        =x
+        screen-y        =y
 ==>
     =imaginal>
         step            after-move
+        last-x          =x
+        last-y          =y
     +manual>
         cmd             press-key
         key             =key
@@ -497,6 +497,90 @@
         step            move
 )
 
+;; (p nothing-to-eval
+;;     =goal>
+;;     =imaginal>
+;;         step            eval-did-move
+;;         desired-color   nil
+;; ==>
+;;     =imaginal>
+;;         step            move
+;; )
+
+;; (p request-red-font
+;;     =goal>
+;;         phase           reach-target
+;;         player          =player
+;;     =imaginal>
+;;         step            eval-did-move
+;;         desired-color   =desired-color
+;; ==>
+;;     =imaginal>
+;;     +visual-location>
+;;         kind            text
+;;         color           red
+;; )
+
+;; (p attend-red-font
+;;      =goal>
+;;         phase           reach-target
+;;         player          =player
+;;     =imaginal>
+;;         step            eval-did-move
+;;         desired-color   =desired-color
+;;     =visual-location>
+;;         kind            text
+;;         color           red
+;; ==>
+;;     =imaginal>
+;;     +visual>
+;;         cmd             move-attention
+;;         screen-pos      =visual-location
+;; )
+
+;; (p save-bonus-color
+;;     =goal>
+;;         bonus           nil
+;;     =imaginal>
+;;         desired-color  =color
+;;     =visual>
+;;         kind            text
+;;         color           red
+;;         value           "+100!"
+;; ==>
+;;     =goal>
+;;         bonus           =color
+;;     =imaginal>
+;;         step            find
+;; )
+
+;; (p save-malus-color
+;;     =goal>
+;;         malus           nil
+;;     =imaginal>
+;;         desired-color  =color
+;;     =visual>
+;;         kind            text
+;;         color           red
+;;         value           "-100!"
+;; ==>
+;;     =goal>
+;;         malus           =color
+;;     =imaginal>
+;;         step            find
+;; )
+
+;; (p red-font-failure
+;;     =goal>
+;;     =imaginal>
+;;         step            eval-did-move
+;;     ?visual-location>
+;;         buffer          failure
+;; ==>
+;;     =imaginal>
+;;         step            move
+;; )
+
 (p reward-position-did-not-change
     =goal>
         phase           reach-target
@@ -511,11 +595,11 @@
         screen-x        =x
         screen-y        =y
     ?manual>
-        state           free
+        state           free    
 ==>
     =imaginal>
         step            eval-did-not-move
-    can-explore         nil
+        can-explore     nil
 )
 
 (p obstacle-known
@@ -529,9 +613,8 @@
         step            move
 )
 
-(p request-blocking-tile
+(p request-obstacle
     =goal>
-        phase           reach-target
         player          =player
         obstacle        nil
     =imaginal>
@@ -541,13 +624,12 @@
 ==>
     =imaginal>
     +visual-location>
-      - color           =player
         kind            oval
         screen-x        =x
-        screen-y        =y
+        screen-y        =y     
 )
 
-(p get-obstacle-color
+(p obstacle-color-unknown
     =goal>
         phase           reach-target
         player          =player
@@ -555,29 +637,29 @@
     =imaginal>
         step            eval-did-not-move
     =visual-location>
+        kind            oval
         color           =color
       - color           =player
-        kind            oval
 ==>
-    +visual-location>
-
     =goal>
         obstacle        =color
     =imaginal>
         step            move
 )
 
-(spp (
-    detect-goal
-    save-goal-pos-and-change-target
-    press-key
-    find-player
-    attend-player
-    track-player
-    reward-change-of-distance-to-target
-    reward-position-did-not-change)
-:fixed-utility t)
+(p obstacle-request-failure
+    =goal>
+        phase           reach-target
+        player          =player
+    =imaginal>
+        step            eval-did-not-move
+    ?visual-location>
+        buffer          failure
+==>
+    =imaginal>
+        step            move
+)
 
-(spp reward-change-of-distance-to-target :u 10)
-(spp reward-position-did-not-change :u 20 :reward -15)
+(spp reward-change-of-distance-to-target :fixed-utility t :u -10)
+(spp reward-position-did-not-change :fixed-utility t :u 20 :reward -25)
 )
