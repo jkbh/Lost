@@ -6,17 +6,43 @@
 (sgp :esc t)    ; Dieses Modell verwendet subsymbolische Verarbeitung
 (sgp :v t :show-focus t :trace-detail high)
 
-(chunk-type goal phase player obstacle bonus malus target-x target-y border-left border-right border-top border-bottom goal-x goal-y)
+(chunk-type goal phase player obstacle bonus malus target-x target-y border-left border-right border-top border-bottom goal-x goal-y score-pos score)
 (chunk-type who-am-i step player)
 (chunk-type reach-target step player target-x target-y can-explore last-x last-y desired-x desired-y desired-color explore-color)
 
 (chunk-type target pos)
 
 (add-dm
-    (first-goal isa goal phase idle)
+    (first-goal isa goal phase idle score 0)
 )
 
 (goal-focus first-goal)
+
+(p find-score
+    =goal>
+        score-pos       nil  
+    ?imaginal>
+        buffer          empty  
+==>
+    +visual-location>
+        kind            text
+        color           black
+        screen-x        355
+)
+
+(p save-score-pos
+    =goal>
+        score-pos       nil
+    ?imaginal>
+        buffer          empty
+    =visual-location>
+        kind            text
+        color           black
+        screen-x        355
+==>
+    =goal>
+        score-pos       =visual-location
+)
 
 (p enter-whoami
     =goal>
@@ -231,7 +257,7 @@
         phase           reach-target
     +imaginal>
         isa             reach-target
-        step            find
+        step            move
 )
 
 ;; GOAL DETECTION
@@ -260,6 +286,7 @@
         screen-x        =x
         screen-y        =y
 ==>
+    -visual-location>
     =goal>
         goal-x          =x
         goal-y          =y
@@ -273,50 +300,14 @@
     =goal>
         phase           reach-target
         player          =player
-    =imaginal>
-        isa             reach-target
-        step            find
+    ?visual-location>
+      - buffer          full
+    ?manual>
+        state           free
 ==>
-    =imaginal>
-        step            attend
     +visual-location>
         color           =player
         kind            oval
-)
-
-(p attend-player
-    =goal>
-        phase       reach-target
-        player      =player
-    =imaginal>
-        isa         reach-target
-        step        attend
-    =visual-location>
-        color       =player 
-        kind        oval     
-==>
-    =imaginal>
-        step        track
-    +visual>
-        screen-pos  =visual-location  
-        cmd         move-attention
-)
-
-(p track-player
-    =goal>
-        phase       reach-target
-        player      =player
-    =imaginal>
-        isa         reach-target
-        step        track
-    =visual>
-        color       =player   
-        oval        t  
-==>
-    +visual>
-        cmd         start-tracking
-    =imaginal>
-        step        move
 )
 
 ;; MOVEMENT
@@ -334,11 +325,12 @@
         screen-x        =x
         screen-y        =y
 
-    !eval! (< =x =target-x)
+    ;; !eval! (< =x =target-x)
     !eval! (< =x (- =x-max 25))
     !bind! =xnew (+ =x 25)
 ==>
     +visual-location>
+      - color           =player
         kind            oval
         screen-x        =xnew
         screen-y        =y    
@@ -362,11 +354,12 @@
         screen-x        =x
         screen-y        =y   
 
-    !eval! (< =y =target-y)
+    ;; !eval! (< =y =target-y)
     !eval! (< =y (- =y-max 25))
     !bind! =ynew (+ =y 25)
 ==>
     +visual-location>
+      - color           =player
         kind            oval
         screen-x        =x
         screen-y        =ynew  
@@ -390,12 +383,13 @@
         screen-x        =x
         screen-y        =y
 
-    !eval! (> =x =target-x)
+    ;; !eval! (> =x =target-x)
     !eval! (> =x (+ =x-min 25))
     !bind! =xnew (- =x 25)
 ==>
     +visual-location>
         kind            oval
+      - color           =player
         screen-x        =xnew
         screen-y        =y  
     =imaginal>
@@ -419,12 +413,13 @@
         screen-x        =x
         screen-y        =y
 
-    !eval! (> =y =target-y)
+    ;; !eval! (> =y =target-y)
     !eval! (> =y (+ =y-min 25))
     !bind! =ynew (- =y 25)
 ==>
     +visual-location>
         kind            oval
+       - color           =player
         screen-x        =x
         screen-y        =ynew
     =imaginal>
@@ -436,31 +431,39 @@
 
 ;; LOOKAHEAD
 
-(p desired-empty
+(p lookahead-skip
     =goal>
+        player          =player
     =imaginal>
         step            lookahead
-    ?visual-location>
-        buffer          failure
+    =visual-location>
+        kind            oval
+        color           =player
 ==>
     =imaginal>
         step            press-key
+        desired-color   nil
 )
+(spp lookahead-skip :fixed-utility t)
 
-(p desired-unknown
+(p lookahead-save-color
     =goal>
+        player          =player
     =imaginal>
         step            lookahead
     =visual-location>
         kind            oval
         color           =desired-color
+      - color           =player
 ==>
+    -visual-location>
     =imaginal>
         desired-color   =desired-color
         step            press-key
 )
+(spp lookahead-save-color :fixed-utility t :u 100)
 
-(p desired-blocked
+(p lookahead-return-to-move
     =goal>
         obstacle        =obstacle
     =imaginal>
@@ -469,10 +472,12 @@
         kind            oval
         color           =obstacle
 ==>
+    -visual-location>
     =imaginal>
         desired-color   nil
         step            move
 )
+(spp lookahead-return-to-move :fixed-utility t :u 200)
 
 ;; PRESS KEY
 
@@ -488,6 +493,7 @@
         screen-x        =x
         screen-y        =y
 ==>
+    -visual-location>
     =imaginal>
         step            after-move
         last-x          =x
@@ -519,9 +525,9 @@
     !bind! =distance-old (sqrt (+ (expt (- =x-old =target-x) 2) (expt (- =y-old =target-y) 2)))
     !bind! =distance (sqrt (+ (expt (- =x =target-x) 2) (expt (- =y =target-y) 2)))
 ==>
-    ;; !eval! (trigger-reward (- =distance-old =distance))
+    !eval! (trigger-reward (- =distance-old =distance))
     =imaginal>
-        ;; can-explore     t
+        can-explore     t
         step            eval-did-move
 )
 
@@ -535,75 +541,62 @@
 )
 (spp skip-eval-did-move :fixed-utility t)
 
-(p clear-visual-buffer-for-score
+(p attend-score
     =goal>
+        score-pos      =pos
         bonus           nil
     =imaginal>
         step            eval-did-move
-        desired-color   =color
+      - desired-color   nil
 ==>
     =imaginal>
-        step            find-score
-    +visual>
-        cmd             clear
-)
-(spp clear-visual-buffer-for-score :fixed-utility t :u 1)
-
-(p request-red-text
-    =goal>
-        bonus           nil
-    =imaginal>
-        step            find-score
-==>
-    =imaginal>
-        step            attend-score
-    +visual>
-        cmd             clear
-    +visual-location>
-        kind            text
-        color           red
-        screen-x        lowest
-)
-
-(p attend-score
-    =goal>
-    =imaginal>
-        step            attend-score
-    =visual-location>
-        kind            text
-        color           red
-==>
-    =imaginal>
-        step            react-to-text
+        step            compare-score
     +visual>
         cmd             move-attention
-        screen-pos      =visual-location
+        screen-pos      =pos
 )
+(spp attend-score :fixed-utility t :u 1)
 
 (p save-bonus
     =goal>
+        score           =score-old
     =imaginal>
-        step            react-to-text
+        step            compare-score
         desired-color   =color
     =visual>
-        value           "+"
+        text            t
+        value           =score-str
+    !bind! =score (parse-integer =score-str)
+    !eval! (> =score =score-old)
 ==>
-    =imaginal>
+    =goal>
         bonus           =color
-        step            find
+        score           =score
+    +visual>
+        cmd             clear
+    =imaginal>
+        step            move
 )
 
 (p save-malus
     =goal>
+        score           =score-old
     =imaginal>
-        step            react-to-text
+        step            compare-score
         desired-color   =color
     =visual>
-        value           "-"
+        text            t
+        value           =score-str
+    !bind! =score (parse-integer =score-str)
+    !eval! (<= =score =score-old)
 ==>
-    =imaginal>
+    =goal>
         malus           =color
-        step            find
+        score           =score
+    +visual>
+        cmd             clear
+    =imaginal>
+        step            move
 )
 
 ;; EVAL DIDNT MOVE
@@ -640,22 +633,6 @@
         step            move
 )
 
-;; (p request-obstacle
-;;     =goal>
-;;         player          =player
-;;         obstacle        nil
-;;     =imaginal>
-;;         step            eval-did-not-move
-;;         desired-x       =x
-;;         desired-y       =y
-;; ==>
-;;     =imaginal>
-;;     +visual-location>
-;;         kind            oval
-;;         screen-x        =x
-;;         screen-y        =y     
-;; )
-
 (p save-blocking-color
     =goal>
         phase           reach-target
@@ -671,19 +648,6 @@
         step            move
 )
 
-;; (p obstacle-request-failure
-;;     =goal>
-;;         phase           reach-target
-;;         player          =player
-;;     =imaginal>
-;;         step            eval-did-not-move
-;;     ?visual-location>
-;;         buffer          failure
-;; ==>
-;;     =imaginal>
-;;         step            move
-;; )
-
 (spp give-distance-reward :fixed-utility t :u -10)
-(spp give-move-against-wall-reward :fixed-utility t :u 20)
+(spp give-move-against-wall-reward :fixed-utility t :u 20 :reward -15)
 )
