@@ -6,9 +6,7 @@
 (sgp :esc t)    ; Dieses Modell verwendet subsymbolische Verarbeitung
 (sgp :v t :show-focus t :trace-detail high)
 
-(chunk-type goal phase player obstacle bonus malus target-x target-y border-left border-right border-top border-bottom goal-x goal-y)
-(chunk-type who-am-i step player)
-(chunk-type reach-target step player target-x target-y can-explore last-x last-y desired-x desired-y desired-color)
+(chunk-type who-am-i step player last-x)
 
 (chunk-type target pos)
 
@@ -29,6 +27,7 @@
     +imaginal>
         isa             who-am-i
         step            start
+        last-x          0
 )
 
 (p request-top-row-tile-and-move-down 
@@ -37,14 +36,16 @@
     =imaginal>
         isa             who-am-i
         step            start
+        last-x          =last-x
         player          nil
     ?manual>
         state           free
 ==>
     +visual-location>
         screen-y        lowest
+        screen-x        lowest        
+      > screen-x        =last-x
         kind            oval
-        :attended       nil
     +manual>
         cmd             press-key
         key             s
@@ -54,15 +55,14 @@
 
 (p request-same-position-and-save-color
     =goal>
-        isa             goal
         phase           who-am-i
     =imaginal>
-        isa             who-am-i
         step            move
         player          nil
     ?manual>
         state           free
     =visual-location>
+        kind            oval
         screen-x        =x
         screen-y        =y
         color           =color
@@ -73,6 +73,7 @@
     =imaginal>
         player          =color
         step            check
+        last-x          =x
     +manual>
         cmd             press-key
         key             w
